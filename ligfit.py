@@ -187,11 +187,15 @@ def fit():
         #First argument must be the independent argument, the others will be
         #fitted
         p_total = mpf('0.1')
-        def func(l_total, kd, alpha, x):
+
+        def func(l_total, kd, alpha, scaling):
+            kd = mpf(kd)
+            alpha = mpf(alpha)
+            scaling = mpf(scaling)
             p, pl, plp = model_func(kd, alpha, p_total, total_ligand)
-            return mpf(x) * plp
-        params, param_cov = curve_fit(func, total_ligand, y_obs)
-        print(params)
+            return scaling * plp
+        popt, pcov = curve_fit(f=func, xdata=total_ligand, ydata=y_obs)
+        print(popt)
 
 
 
@@ -211,6 +215,7 @@ def fit():
     #plt.grid()
 
     #plt.show()
+
 
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='0.0.1')
