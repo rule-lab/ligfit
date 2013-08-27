@@ -88,10 +88,10 @@ def model_func(kd, alpha, p_total, l_total):
         else:
             p.append(polar_cubic(a_val, q_val, r_val))
     p = numpy.array(p)
-    pl = get_pl(kd, alpha, l_total, p)
+    #pl = get_pl(kd, alpha, l_total, p)
     plp = get_plp(kd, alpha, l_total, p)
     #All we care about here is PLP
-    return pl
+    return plp
 
 def max_plp(kd, p_total):
     '''
@@ -133,7 +133,5 @@ fig.colorbar(surf, shrink=0.5, aspect=5)
 ax.set_xlabel('Log-Total Ligand [L] (conc.)')
 ax.set_ylabel('Log-Cooperativity')
 ax.set_zlabel('Dimerized Protein [PLP](conc.)')
-
-
 
 plt.show()
