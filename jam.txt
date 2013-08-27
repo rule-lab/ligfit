@@ -1,0 +1,16 @@
+The next line contains a JSON dump of fitting parameters
+{"init_alpha": 1.0, "prot_total": 0.1, "init_kd": 1}
+The remaining lines contain the raw data for fitting in a space-separated format in the following order:
+[L]_total (M), Y_obs (RFU or other), Y-error, weighting (0-1)
+1.04 2 0 1
+9.98 13.7 0.577350269 1
+39.52 189.7 26.08320021 1
+80.08 419.3 5.773502692 1
+99.84 523.7 14.43375673 1
+119.60 688.3 11.59022577 1
+395.20 2824.0 40.92676386 1
+603.20 4415.3 131.3671699 1
+800.80 5884.0 416.8057101 1
+6032.00 25682.66667 777.5482836 1
+8008.00 29941.33333 1125.568449 1
+10400.00 28199.7 652.0010225 1
