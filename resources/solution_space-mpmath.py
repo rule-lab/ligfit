@@ -7,22 +7,28 @@ kinetic model for protein homo-dimerization around a bifunctional ligand. It
 will generate a 3D plot of the solution space in normalized units.
 """
 
-import matplotlib as mpl
+
+import numpy
+import mpmath
+from mpmath import mp, mpf  # Used for arbitrary precision floats
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
-import numpy
-import matplotlib.pyplot as plt
 from matplotlib.ticker import LogLocator, FormatStrFormatter
+import matplotlib.pyplot as plt
 
+mp.dps = 30
 
 def calc_abc(kd, alpha, p_total, l_total):
     '''
     Calculates the cubic polynomial constants a, b, and c from the given Kd,
     alpha, p_total, and l_total values.
+
+    This version formulated to work with mpmath for arbitrary floating point
+    precision and numpy arrays.
     '''
-    a = (2.0 * kd) / alpha + (2.0 * l_total) - p_total
-    b = (kd + 2.0 * l_total - 2.0 * p_total) * (kd / alpha)
-    c = (-1.0 * numpy.power(kd, 2.0) * p_total) / alpha
+    a = mpf('2') * kd / alpha + mpf('2') * l_total - p_total
+    b = (kd + mpf('2') * l_total - mpf('2') * p_total) * (kd / alpha)
+    c = (mpf('-1') * numpy.power(kd, mpf('2')) * p_total) / alpha
     return a, b, c
 
 
@@ -31,9 +37,12 @@ def calc_qr(a, b, c):
     Calculates Q and R (functions of a, b, and c) for the cubic solution. The
     value of Q^3 + R^2 will determine if the solution needs to be calculated in
     cartesian or polar coordinates.
+
+    This version formulated to work with mpmath for arbitrary floating point
+    precision and numpy arrays.
     '''
-    q = (3.0 * b - numpy.power(a, 2.0)) / 9.0
-    r = (9.0 * a * b - 27.0 * c - 2.0 * numpy.power(a, 3.0)) / 54.0
+    q = (mpf('3') * b - numpy.power(a, mpf('2'))) / mpf('9')
+    r = (mpf('9') * a * b - mpf('27') * c - mpf('2') * numpy.power(a, mpf('3'))) / mpf('54')
     return q, r
 
 
@@ -41,11 +50,14 @@ def cartesian_cubic(a, q, r):
     '''
     The cartesian coordinate solution of the cubic function; for use when
     Q^3+R^2 > 0
+
+    This version formulated to work with mpmath for arbitrary floating point
+    precision and numpy arrays.
     '''
     #Calculate the three terms of the cubic
-    first = a / -3.0
-    second = numpy.power(r + numpy.sqrt(numpy.power(q, 3) + numpy.power(r, 2)), 1.0 / 3.0)
-    third = numpy.power(r - numpy.sqrt(numpy.power(q, 3) + numpy.power(r, 2)), 1.0 / 3.0)
+    first = a / mpf('-3')
+    second = numpy.power(r + numpy.power(numpy.power(q, mpf('3')) + numpy.power(r, mpf('2')), mpf('0.5')), mpf('1/3'))
+    third = numpy.power(r - numpy.power(numpy.power(q, mpf('3')) + numpy.power(r, mpf('2')), mpf('0.5')), mpf('1/3'))
     return first + second + third
 
 
@@ -53,29 +65,36 @@ def polar_cubic(a, q, r):
     '''
     The polar coordinate solution of the cubic function; for use when
     Q^3+R^2 < 0
+
+    This version formulated to work with mpmath for arbitrary floating point
+    precision and numpy arrays.
     '''
-    theta = numpy.arccos(r / numpy.sqrt(-1.0 * numpy.power(q, 3.0)))
-    val = numpy.cos(theta / 3.0) * numpy.sqrt(-1.0 * q) * 2.0 - a / 3.0
-    return val
+    theta = mpmath.acos(r / numpy.power(mpf('-1') * numpy.power(q, mpf('3')), mpf('0.5')))
+    return mpmath.cos(theta / mpf('3')) * numpy.power(mpf('-1') * q, mpf('0.5')) * mpf('2') - a / mpf('3')
 
 
 def get_pl(kd, alpha, l_total, p):
     '''
     After solving for [P]-free, this function will return the concentration of
     monomer protein bound to ligand: [PL].
-    '''
-    numerator = 2.0 * kd * l_total * p
-    denominator = numpy.power(kd, 2.0) + 2.0 * kd * p + alpha * numpy.power(p, 2.0)
-    return numerator / denominator
 
+    This version formulated to work with mpmath for arbitrary floating point
+    precision and numpy arrays.
+    '''
+    numerator = mpf('2') * kd * l_total * p
+    denominator = numpy.power(kd, mpf('2')) + mpf('2') * kd * p + alpha * numpy.power(p, mpf('2'))
+    return numerator / denominator
 
 def get_plp(kd, alpha, l_total, p):
     '''
     After solving for [P]-free, this function will return the concentration of
     dimer protein bound to ligand: [PLP].
+
+    This version formulated to work with mpmath for arbitrary floating point
+    precision and numpy arrays.
     '''
-    numerator = alpha * l_total * numpy.power(p, 2.0)
-    denominator = numpy.power(kd, 2.0) + 2.0 * kd * p + alpha * numpy.power(p, 2.0)
+    numerator = alpha * l_total * numpy.power(p, mpf('2'))
+    denominator = numpy.power(kd, mpf('2')) + mpf('2') * kd * p + alpha * numpy.power(p, mpf('2'))
     return numerator / denominator
 
 def model_func(kd, alpha, p_total, l_total):
@@ -105,8 +124,8 @@ p_total = 1.0
 kd = 1.0
 
 #The following values are our independent variables
-l_total = numpy.logspace(-2, 3.5, 100).astype('float128')
-alpha = numpy.logspace(-2, 8, 100).astype('float128')
+l_total = numpy.logspace(-2, 3.5, 100)
+alpha = numpy.logspace(-2, 8, 100)
 
 #I considered using meshgrid here, but was confounded by the "polar or cubic"
 #operation, so I went for a bit less elegance
@@ -114,7 +133,7 @@ plp_concentration = []
 for alpha_value in alpha:
     plp = model_func(kd, alpha_value, p_total, l_total)
     plp_concentration.append(plp)
-plp_soln = numpy.array(plp_concentration)
+plp_soln = numpy.array(plp_concentration).astype('float128')
 
 
 lm, am = numpy.meshgrid(l_total, alpha)
